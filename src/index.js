@@ -13,18 +13,18 @@ let total = 0;
 app.ports.generateImages.subscribe(data => {
   state = 0;
   total = data.length;
-  Promise.all(data.map(processImage)).then(values => {
-    createZip(values).then(content => {
+  Promise.all(data.map(processImage)).then(images => {
+    createZip(images).then(content => {
       app.ports.receiveZip.send(1);
       saveAs(content, "photos.zip");
     });
   });
 });
 
-function createZip(files) {
+function createZip(images) {
   return new Promise((resolve, reject) => {
     const worker = new ZipWorker();
-    worker.postMessage(files);
+    worker.postMessage(images);
     worker.onmessage = function(e) {
       resolve(e.data);
       worker.terminate();
@@ -37,7 +37,9 @@ function processImage(data) {
     var worker = new Worker();
     worker.postMessage(data);
     worker.onmessage = function(e, a) {
-      e.data.arrayBuffer().then(b => resolve(b));
+      e.data
+        .arrayBuffer()
+        .then(blob => resolve(Object.assign({}, data, { blob })));
       state++;
       app.ports.imageProgress.send((state / total) * 100);
       worker.terminate();

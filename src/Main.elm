@@ -45,6 +45,7 @@ type alias Image =
     , saturation : Float
     , contrast : Float
     , brightness : Float
+    , name : String
     }
 
 
@@ -91,9 +92,30 @@ type Msg
     | UserClicksNext
     | UserClicksPrevious
     | UserClickedDone
+    | UserInputName String
     | ReceivedZip Int
     | GotImageProgress Float
     | FinishedExporting
+
+
+updateImage : EditorModel -> (Image -> Image) -> EditorModel
+updateImage editorModel updateFunction =
+    let
+        image =
+            Array.get editorModel.selectedImageIndex editorModel.images
+    in
+    case image of
+        Just selectedImage ->
+            { editorModel
+                | images =
+                    Array.set
+                        editorModel.selectedImageIndex
+                        (updateFunction selectedImage)
+                        editorModel.images
+            }
+
+        Nothing ->
+            editorModel
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -126,68 +148,29 @@ update msg model =
             , generateImages (Array.toList editorModel.images)
             )
 
-        ( UserSetBrightness v, Editor editorModel ) ->
-            let
-                image =
-                    Array.get editorModel.selectedImageIndex editorModel.images
-            in
-            case image of
-                Just selectedImage ->
-                    ( Editor
-                        { editorModel
-                            | images =
-                                Array.set
-                                    editorModel.selectedImageIndex
-                                    { selectedImage | brightness = v }
-                                    editorModel.images
-                        }
-                    , Cmd.none
-                    )
+        ( UserInputName v, Editor editorModel ) ->
+            ( Editor
+                (updateImage editorModel (\image -> { image | name = v }))
+            , Cmd.none
+            )
 
-                Nothing ->
-                    ( model, Cmd.none )
+        ( UserSetBrightness v, Editor editorModel ) ->
+            ( Editor
+                (updateImage editorModel (\image -> { image | brightness = v }))
+            , Cmd.none
+            )
 
         ( UserSetContrast v, Editor editorModel ) ->
-            let
-                image =
-                    Array.get editorModel.selectedImageIndex editorModel.images
-            in
-            case image of
-                Just selectedImage ->
-                    ( Editor
-                        { editorModel
-                            | images =
-                                Array.set
-                                    editorModel.selectedImageIndex
-                                    { selectedImage | contrast = v }
-                                    editorModel.images
-                        }
-                    , Cmd.none
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( Editor
+                (updateImage editorModel (\image -> { image | contrast = v }))
+            , Cmd.none
+            )
 
         ( UserSetSaturation v, Editor editorModel ) ->
-            let
-                image =
-                    Array.get editorModel.selectedImageIndex editorModel.images
-            in
-            case image of
-                Just selectedImage ->
-                    ( Editor
-                        { editorModel
-                            | images =
-                                Array.set
-                                    editorModel.selectedImageIndex
-                                    { selectedImage | saturation = v }
-                                    editorModel.images
-                        }
-                    , Cmd.none
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( Editor
+                (updateImage editorModel (\image -> { image | saturation = v }))
+            , Cmd.none
+            )
 
         ( GotImageProgress v, Editor editorModel ) ->
             ( Editor
@@ -220,15 +203,16 @@ update msg model =
 
 mapFileToTask : File -> Task.Task x Image
 mapFileToTask file =
-    Task.map (createImage file) (File.toUrl file)
+    Task.map createImage (File.toUrl file)
 
 
-createImage : File -> String -> Image
-createImage file preview =
+createImage : String -> Image
+createImage preview =
     { src = preview
     , contrast = 100
     , saturation = 100
     , brightness = 100
+    , name = ""
     }
 
 
@@ -403,7 +387,13 @@ viewImage image =
             ]
             []
         , div [ class "controls" ]
-            [ input [ class "name", placeholder "Name" ] []
+            [ input
+                [ class "name"
+                , placeholder "Name"
+                , onInput UserInputName
+                , value image.name
+                ]
+                []
             , div [ class "slider-container" ]
                 [ label [] [ text "Contrast" ]
                 , slider 50 150 image.contrast UserSetContrast

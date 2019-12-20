@@ -1,8 +1,10 @@
 import JSZip from "jszip";
 
 onmessage = function(e) {
-  const values = e.data;
+  const images = e.data;
   const zip = new JSZip();
-  values.forEach((value, index) => zip.file(`file_${index}.jpeg`, value));
+  images.forEach((image, index) =>
+    zip.file(`${image.name || index}.jpeg`, image.blob)
+  );
   zip.generateAsync({ type: "blob" }).then(content => postMessage(content));
 };
