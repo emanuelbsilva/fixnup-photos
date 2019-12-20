@@ -8,6 +8,7 @@ $mainFont: 'Montserrat';
   display: flex;
   flex-direction: column;
   width: 100%;
+  height: 100vh;
 
   .top-bar {
     margin: 0;
@@ -29,6 +30,17 @@ $mainFont: 'Montserrat';
       border: 0;
       outline: hidden;
     }
+  }
+}
+
+.editor-body {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 40px;
+
+  .nav {
+    width: 100px;
   }
 }
 

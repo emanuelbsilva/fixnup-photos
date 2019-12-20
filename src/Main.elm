@@ -88,6 +88,8 @@ type Msg
     | UserSetBrightness Float
     | UserSetContrast Float
     | UserSetSaturation Float
+    | UserClicksNext
+    | UserClicksPrevious
     | UserClickedDone
     | ReceivedZip Int
     | GotImageProgress Float
@@ -206,6 +208,12 @@ update msg model =
         ( FinishedExporting, Editor editorModel ) ->
             ( Editor { editorModel | exportState = Idle }, Cmd.none )
 
+        ( UserClicksNext, Editor editorModel ) ->
+            ( Editor { editorModel | selectedImageIndex = editorModel.selectedImageIndex + 1 }, Cmd.none )
+
+        ( UserClicksPrevious, Editor editorModel ) ->
+            ( Editor { editorModel | selectedImageIndex = editorModel.selectedImageIndex - 1 }, Cmd.none )
+
         ( _, _ ) ->
             ( model, Cmd.none )
 
@@ -309,7 +317,33 @@ viewEditor model =
     div
         []
         [ viewImagePreviews model.images
-        , viewImageEditor (Array.get model.selectedImageIndex model.images)
+        , div [ class "editor-body" ]
+            [ viewPreviousImage model
+            , viewImageEditor (Array.get model.selectedImageIndex model.images)
+            , viewNextImage model
+            ]
+        ]
+
+
+viewPreviousImage : EditorModel -> Html Msg
+viewPreviousImage model =
+    div [ class "nav" ]
+        [ if model.selectedImageIndex == 0 then
+            div [] []
+
+          else
+            button [ onClick UserClicksPrevious ] [ text "Previous" ]
+        ]
+
+
+viewNextImage : EditorModel -> Html Msg
+viewNextImage model =
+    div [ class "nav" ]
+        [ if model.selectedImageIndex + 1 == Array.length model.images then
+            div [] []
+
+          else
+            button [ onClick UserClicksNext ] [ text "Next" ]
         ]
 
 
