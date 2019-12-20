@@ -13,7 +13,7 @@ aliases:
     restore_cache:
       name: Restore Npm Package Cache
       keys:
-        - v1-dependencies-{{ checksum "yarn.lock" }}
+        - v1-dependencies-{{ checksum "package.json" }}
 
   install_node_modules: &install_node_modules
     run:
@@ -23,7 +23,7 @@ aliases:
   save_cache: &save_cache
     save_cache:
       name: Save NPM package cache
-      key: v1-dependencies-{{ checksum "yarn.lock" }}
+      key: v1-dependencies-{{ checksum "package.json" }}
       paths:
         - node_modules
 
