@@ -22,7 +22,7 @@ app.ports.generateImages.subscribe(data => {
 });
 
 function createZip(images) {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     const worker = new ZipWorker();
     worker.postMessage(images);
     worker.onmessage = function(e) {
@@ -33,10 +33,10 @@ function createZip(images) {
 }
 
 function processImage(data) {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     var worker = new Worker();
     worker.postMessage(data);
-    worker.onmessage = function(e, a) {
+    worker.onmessage = function(e) {
       e.data
         .arrayBuffer()
         .then(blob => resolve(Object.assign({}, data, { blob })));
