@@ -1,6 +1,5 @@
 "use strict";
-require("./styles.scss");
-
+import {} from "./styles.scss";
 import Worker from "worker-loader!./worker.js";
 import ZipWorker from "worker-loader!./zip-worker.js";
 import { Elm } from "./Main";
