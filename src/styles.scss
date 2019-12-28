@@ -1,6 +1,8 @@
 @import '~purecss/build/pure.css';
 
-$mainColor: rgb(52, 108, 182);
+$mainColor: #0288d1;
+$mainColorDark: #005b9f;
+$mainColorLight: #5eb8ff;
 $mainFont: 'Montserrat';
 
 .main {
@@ -13,7 +15,7 @@ $mainFont: 'Montserrat';
   .top-bar {
     margin: 0;
     padding: 10px;
-    background-color: $mainColor;
+    background-color: $mainColorDark;
     color: white;
     display: flex;
     align-items: center;
@@ -47,15 +49,20 @@ $mainFont: 'Montserrat';
   display: flex;
   width: 100%;
   overflow-y: scroll;
-  height: 100px;
 
   img {
-    border: 2px solid $mainColor;
+    border: solid 2px transparent;
+    height: 100px;
   }
+
+  img.selected {
+    border-color: $mainColor;
+  }
+
 }
 
 .image-editor {
-  margin: 20px;
+  margin: 40px;
   display: flex;
   flex-direction: row;
   width: 100%;
@@ -64,7 +71,7 @@ $mainFont: 'Montserrat';
   justify-content: center;
 
   img {
-    width: 60%;
+    height: 60vh;
   }
 
   .controls {

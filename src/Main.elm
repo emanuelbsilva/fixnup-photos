@@ -300,7 +300,7 @@ viewEditor : EditorModel -> Html Msg
 viewEditor model =
     div
         []
-        [ viewImagePreviews model.images
+        [ viewImagePreviews model.selectedImageIndex model.images
         , div [ class "editor-body" ]
             [ viewPreviousImage model
             , viewImageEditor (Array.get model.selectedImageIndex model.images)
@@ -344,24 +344,29 @@ imageFilterValue image =
         ++ "%)"
 
 
-viewImagePreviews : Array Image -> Html Msg
-viewImagePreviews images =
+viewImagePreviews : Int -> Array Image -> Html Msg
+viewImagePreviews selectedImageIndex images =
     div
         [ class "image-previews"
         ]
         (Array.toList
-            (Array.indexedMap viewImagePreview images)
+            (Array.indexedMap (viewImagePreview selectedImageIndex) images)
         )
 
 
-viewImagePreview : Int -> Image -> Html Msg
-viewImagePreview index image =
+viewImagePreview : Int -> Int -> Image -> Html Msg
+viewImagePreview selectedImageIndex index image =
     img
         [ src image.src
-        , style "width" "auto"
-        , style "height" "100%"
         , style "filter" (imageFilterValue image)
         , onClick (UserSelectedImage index)
+        , class
+            (if index == selectedImageIndex then
+                "selected"
+
+             else
+                ""
+            )
         ]
         []
 
