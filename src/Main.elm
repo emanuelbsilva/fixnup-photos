@@ -248,7 +248,7 @@ viewExportState model =
             button [ class "done", onClick UserClickedDone ] [ text "Export" ]
 
         CreatingImages percentage ->
-            text (String.concat [ String.fromFloat percentage, "%" ])
+            text (String.concat [ String.fromInt (Basics.round percentage), "%" ])
 
         CreatingZip ->
             text "Zipping.."
@@ -276,12 +276,31 @@ viewTopBar model =
         ]
 
 
+viewProgressBar : Model -> Html Msg
+viewProgressBar model =
+    case model of
+        Editor editorModel ->
+            case editorModel.exportState of
+                CreatingImages percentage ->
+                    div [ class "progress-bar", style "width" (String.concat [ String.fromInt (Basics.round percentage), "%" ]) ] []
+
+                Idle ->
+                    div [] []
+
+                _ ->
+                    div [ class "progress-bar", style "width" "100%" ] []
+
+        _ ->
+            div [] []
+
+
 view : Model -> Html Msg
 view model =
     div
         [ class "main"
         ]
-        [ viewTopBar model
+        [ viewProgressBar model
+        , viewTopBar model
         , viewState model
         ]
 
