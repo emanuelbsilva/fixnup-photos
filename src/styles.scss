@@ -53,6 +53,12 @@ $mainFont: 'Montserrat';
   img {
     border: solid 2px transparent;
     height: 100px;
+    padding: 10px;
+  }
+
+  img:hover {
+    border: solid 2px red;
+    transition: 2s;
   }
 
   img.selected {

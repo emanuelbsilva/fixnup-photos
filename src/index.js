@@ -1,9 +1,9 @@
 "use strict";
 import {} from "./styles.scss";
-import Worker from "worker-loader!./worker.js";
 import ZipWorker from "worker-loader!./zip-worker.js";
 import { Elm } from "./Main";
 import { saveAs } from "./utils.js";
+import { ImageWorkerPool } from "./ImageWorkerPool";
 
 var app = Elm.Main.init();
 
@@ -31,17 +31,16 @@ function createZip(images) {
   });
 }
 
+const imagePool = new ImageWorkerPool(5);
+
 function processImage(data) {
   return new Promise(resolve => {
-    var worker = new Worker();
-    worker.postMessage(data);
-    worker.onmessage = function(e) {
-      e.data
+    imagePool.exec(data).then(data => {
+      data
         .arrayBuffer()
         .then(blob => resolve(Object.assign({}, data, { blob })));
       state++;
       app.ports.imageProgress.send((state / total) * 100);
-      worker.terminate();
-    };
+    });
   });
 }
