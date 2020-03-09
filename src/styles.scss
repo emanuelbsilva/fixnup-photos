@@ -1,9 +1,15 @@
 @import '~purecss/build/pure.css';
 
+$backgroundColor: #252525;
 $mainColor: #0288d1;
 $mainColorDark: #005b9f;
 $mainColorLight: #5eb8ff;
 $mainFont: 'Montserrat';
+
+
+html {
+  background-color: $backgroundColor;
+}
 
 .main {
   font-family: $mainFont;
@@ -110,6 +116,7 @@ $mainFont: 'Montserrat';
 
       label {
         width: 100px;
+        color: white;
       }
 
       input {
