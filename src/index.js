@@ -9,15 +9,17 @@ var app = Elm.Main.init();
 
 let state = 0;
 let total = 0;
-app.ports.generateImages.subscribe(data => {
+app.ports.generateImages.subscribe(({ images, watermark }) => {
   state = 0;
-  total = data.length;
-  Promise.all(data.map(processImage)).then(images => {
-    createZip(images).then(content => {
-      app.ports.receiveZip.send(1);
-      saveAs(content, "photos.zip");
-    });
-  });
+  total = images.length;
+  Promise.all(images.map(image => processImage({ watermark, image }))).then(
+    images => {
+      createZip(images).then(content => {
+        app.ports.receiveZip.send(1);
+        saveAs(content, "photos.zip");
+      });
+    }
+  );
 });
 
 function createZip(images) {
@@ -33,9 +35,9 @@ function createZip(images) {
 
 const imagePool = new ImageWorkerPool(5);
 
-function processImage(data) {
+function processImage({ image, watermark }) {
   return new Promise(resolve => {
-    imagePool.exec(data).then(data => {
+    imagePool.exec({ image, watermark }).then(data => {
       data
         .arrayBuffer()
         .then(blob => resolve(Object.assign({}, data, { blob })));

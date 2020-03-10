@@ -58,6 +58,7 @@ type alias EditorModel =
     { images : Array Image
     , selectedImageIndex : Int
     , exportState : ExportStateModel
+    , watermark : Maybe String
     }
 
 
@@ -85,6 +86,9 @@ type Msg
     | DragLeave
     | GotFiles File (List File)
     | GotPreviews (List Image)
+    | PickWatermark
+    | GotWatermark File
+    | GotWatermarkUrl String
     | UserSelectedImage Int
     | UserSetBrightness Float
     | UserSetContrast Float
@@ -138,14 +142,24 @@ update msg model =
             )
 
         ( GotPreviews images, UploadFiles _ ) ->
-            ( Editor <| EditorModel (Array.fromList images) 0 Idle, Cmd.none )
+            ( Editor <| EditorModel (Array.fromList images) 0 Idle Nothing, Cmd.none )
+
+
+        ( PickWatermark, Editor _ ) ->
+            ( model, Select.file [ "image/*" ] GotWatermark )
+
+        ( GotWatermark file , Editor editorModel ) ->
+            ( model, Task.perform GotWatermarkUrl <| (File.toUrl file))
+
+        ( GotWatermarkUrl file, Editor editorModel ) ->
+            ( Editor { editorModel | watermark = Just file }, Cmd.none )
 
         ( UserSelectedImage index, Editor editorModel ) ->
             ( Editor { editorModel | selectedImageIndex = index }, Cmd.none )
 
         ( UserClickedDone, Editor editorModel ) ->
             ( Editor { editorModel | exportState = CreatingImages 0 }
-            , generateImages (Array.toList editorModel.images)
+            , generateImages {images = (Array.toList editorModel.images), watermark = editorModel.watermark }
             )
 
         ( UserInputName v, Editor editorModel ) ->
@@ -220,7 +234,12 @@ createImage preview =
 -- SUBSCRIPTIONS
 
 
-port generateImages : List Image -> Cmd msg
+type alias GenerateImages = 
+    { images: List Image
+    , watermark: Maybe String
+    }
+
+port generateImages : GenerateImages -> Cmd msg
 
 
 port receiveZip : (Int -> a) -> Sub a
@@ -266,9 +285,17 @@ viewTopBar model =
         , div
             [ class "controls"
             ]
-            [ case model of
+            [ 
+             
+                case model of
                 Editor editorModel ->
-                    viewExportState editorModel
+                    div []
+
+                    [
+                        button [ onClick PickWatermark ] [ text "Watermark" ]
+                        , viewExportState editorModel
+
+                    ]
 
                 _ ->
                     div [] []
@@ -419,16 +446,16 @@ viewImage image =
                 ]
                 []
             , div [ class "slider-container" ]
+                [ label [] [ text "Brightness" ]
+                , slider 50 150 image.brightness UserSetBrightness
+                ]
+            , div [ class "slider-container" ]
                 [ label [] [ text "Contrast" ]
                 , slider 50 150 image.contrast UserSetContrast
                 ]
             , div [ class "slider-container" ]
                 [ label [] [ text "Saturation" ]
                 , slider 50 150 image.saturation UserSetSaturation
-                ]
-            , div [ class "slider-container" ]
-                [ label [] [ text "Brightness" ]
-                , slider 50 150 image.brightness UserSetBrightness
                 ]
             ]
         ]

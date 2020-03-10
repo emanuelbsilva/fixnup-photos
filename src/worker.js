@@ -1,18 +1,22 @@
-import { dataURItoBlob } from "./utils";
+import { dataURItoBlob, applyWatermark } from "./utils";
 
 onmessage = function(e) {
-  createImageBitmap(dataURItoBlob(e.data.src)).then(img => {
+  const { image, watermark } = e.data;
+  createImageBitmap(dataURItoBlob(image.src)).then(img => {
     const canvas = new OffscreenCanvas(img.width, img.height);
     const ctx = canvas.getContext("2d");
-    ctx.filter = `saturate(${e.data.saturation}%) contrast(${e.data.contrast}%) brightness(${e.data.brightness}%) `;
+    ctx.filter = `saturate(${image.saturation}%) contrast(${image.contrast}%) brightness(${image.brightness}%) `;
     ctx.drawImage(img, 0, 0);
-    canvas
-      .convertToBlob({
-        type: "image/jpeg",
-        quality: 0.95
-      })
-      .then(blob => {
-        postMessage(blob);
-      });
+
+    applyWatermark({ canvas, src: watermark }).then(() => {
+      canvas
+        .convertToBlob({
+          type: "image/jpeg",
+          quality: 0.95
+        })
+        .then(blob => {
+          postMessage(blob);
+        });
+    });
   });
 };
