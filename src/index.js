@@ -40,7 +40,7 @@ function processImage({ image, watermark }) {
     imagePool.exec({ image, watermark }).then(data => {
       data
         .arrayBuffer()
-        .then(blob => resolve(Object.assign({}, data, { blob })));
+        .then(blob => resolve(Object.assign({}, image, { blob })));
       state++;
       app.ports.imageProgress.send((state / total) * 100);
     });

@@ -94,6 +94,7 @@ export function applyPatternToCanvas({ canvas, blob }) {
 }
 
 export const applyWatermark = ({ canvas, src }) => {
+  if (!src) return Promise.resolve();
   return getAngledImage({ src, angle: 20 }).then(blob => {
     return applyPatternToCanvas({ canvas, blob });
   });
